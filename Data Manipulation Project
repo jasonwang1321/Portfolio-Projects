@@ -1,0 +1,346 @@
+
+-- To show the Total Units Sold and Total Billings
+select sum(Units_sold) as [Summed Units Sold], sum(Billings) as [Summed Billings], Segment
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    group by segment
+
+--showing goods (611 were third party)
+select round(Units_Sold,2), round(Billings,2), Start_Date, segment, Inventory_Type
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'goods' and Inventory_Type like 'third%' and Billings < 0
+
+-- Estimating Goods by Quarter split by month
+select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'goods' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'goods'
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    order by datepart(year,start_date), datepart(month,start_date), segment
+
+
+-- Use CTE to group by Quarter
+With TotalsByQuarter (TotalDealsStarted, TotalUnitsSold, TotalBillings, Segment, year, month, Quarter)
+as
+    (
+   select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'goods' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'goods'
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    )
+select sum(TotalDealsStarted) as TotalDealsStartedByQuarter, 
+    round(sum(totalunitssold),2) as TotalUnitsSoldByQuarter, round(sum(totalbillings),2) as TotalBillingsPerQuarter, quarter
+from TotalsByQuarter
+group by quarter
+order by quarter
+
+-- by year
+With TotalsByQuarter (TotalDealsStarted, TotalUnitsSold, TotalBillings, Segment, year, month, Quarter)
+as
+    (
+   select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'goods' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'goods'
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    )
+select sum(TotalDealsStarted) as TotalDeals, 
+    round(sum(totalunitssold),2) as TotalUnitsSold, round(sum(totalbillings),2) as TotalBillings, year
+from TotalsByQuarter
+group by year
+order by year
+
+--checking third party goods
+
+select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment,inventory_type,
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'goods' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'goods' and Inventory_Type like 'third%' and Billings < 0
+    group by segment,datepart(year,start_date), datepart(month,start_date), Inventory_Type
+    order by datepart(year,start_date), datepart(month,start_date), segment
+--
+
+-- Estimating Goods by Quarter split by month
+select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month, inventory_type,
+    case when segment = 'goods' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'goods'
+    group by segment,datepart(year,start_date), datepart(month,start_date),Inventory_Type
+    order by inventory_type, datepart(year,start_date), datepart(month,start_date), segment
+
+
+-- Use CTE to group by Quarter
+With TotalsByQuarter (TotalDealsStarted, TotalUnitsSold, TotalBillings, Segment, year, month, Inventory_Type,Quarter)
+as
+    (
+   select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month, inventory_type,
+    case when segment = 'goods' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'goods' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'goods'
+    group by segment,datepart(year,start_date), datepart(month,start_date),Inventory_Type
+    )
+select sum(TotalDealsStarted) as TotalDealsStartedByQuarter, 
+    round(sum(totalunitssold),2) as TotalUnitsSoldByQuarter, round(sum(totalbillings),2) as TotalBillingsPerQuarter, Inventory_Type, year
+from TotalsByQuarter
+group by Inventory_Type, year
+order by inventory_type, year
+-- ALSO SHOULD GROUP BY YEAR TO SEE THE WHOLE YEARS INFORMATION AFTER
+-- answer why 13Q1 and 13Q2 have negative units sold by still profitable may have to calculate revenue per item?
+
+
+-- Estimating Local by Quarter split by month
+select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'local' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'local'
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    order by datepart(year,start_date), datepart(month,start_date), segment
+
+-- Use CTE to group by Quarter
+With TotalsByQuarter (TotalDealsStarted, TotalUnitsSold, TotalBillings, Segment, year, month, Quarter)
+as
+    (
+    select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'local' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'local'
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    )
+select sum(TotalDealsStarted) as TotalDealsStartedByQuarter, 
+    round(sum(totalunitssold),2) as TotalUnitsSoldByQuarter, round(sum(totalbillings),2) as TotalBillingsPerQuarter, quarter
+from TotalsByQuarter
+group by quarter
+order by quarter
+
+-- by year
+With TotalsByQuarter (TotalDealsStarted, TotalUnitsSold, TotalBillings, Segment, year, month, Quarter)
+as
+    (
+   select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'local' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'local' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'local' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'local'
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    )
+select sum(TotalDealsStarted) as TotalDeals, 
+    round(sum(totalunitssold),2) as TotalUnitsSold, round(sum(totalbillings),2) as TotalBillings, year
+from TotalsByQuarter
+group by year
+order by year
+-- ALSO SHOULD GROUP BY YEAR TO SEE THE WHOLE YEARS INFORMATION AFTER
+
+
+
+-- Estimating Travel by Quarter split by month
+select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'travel' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'travel'
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    order by datepart(year,start_date), datepart(month,start_date), segment
+
+-- Use CTE to group by Quarter
+With TotalsByQuarter (TotalDealsStarted, TotalUnitsSold, TotalBillings, Segment, year, month, Quarter)
+as
+    (
+   select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'travel' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'travel'
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    )
+select sum(TotalDealsStarted) as TotalDealsStartedByQuarter, 
+    round(sum(totalunitssold),2) as TotalUnitsSoldByQuarter, round(sum(totalbillings),2) as TotalBillingsPerQuarter, quarter
+from TotalsByQuarter
+group by quarter
+order by quarter
+-- by year
+With TotalsByQuarter (TotalDealsStarted, TotalUnitsSold, TotalBillings, Segment, year, month, Quarter)
+as
+    (
+   select count(deal_id) as [Number of deals], round(sum(Units_sold),2) as [Summed Units Sold], round(sum(Billings),2) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    case when segment = 'travel' and datepart(year,Start_Date) like '2011' and datepart(month,Start_Date) between '10' and '12' then '11Q4'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '1' and '3' then '12Q1'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '4' and '6' then '12Q2'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,Start_Date) between '7' and '9' then '12Q3'
+         when segment = 'travel' and datepart(year,Start_Date) like '2012' and datepart(month,start_date) between '10' and '12' then '12Q4'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '1' and '3' then '13Q1'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '4' and '6'then '13Q2'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '7' and '9'then '13Q3'
+         when segment = 'travel' and datepart(year,Start_Date) like '2013' and datepart(month,Start_Date) between '10' and '12'then '13Q4'
+         end as Quarter
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where segment = 'travel'
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    )
+select sum(TotalDealsStarted) as TotalDeals, 
+    round(sum(totalunitssold),2) as TotalUnitsSold, round(sum(totalbillings),2) as TotalBillings, year
+from TotalsByQuarter
+group by year
+order by year
+-- ALSO SHOULD GROUP BY YEAR TO SEE THE WHOLE YEARS INFORMATION AFTER
+select * from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+where segment = 'travel' and DATEPART(year, Start_Date) like '2013' and DATEPART(month, Start_Date) between '4' and '7'
+
+-- data from 2011-11-21 (11q4) to (12q1, 12q2) 2012-06-06 is missing !! need to estimate that
+-- also need to estimate from 10-20-2013 to 10-30-2013
+-- need to account for how long deal has lasted as well
+
+
+
+
+
+
+
+
+--
+-- Showing units sold, billings, revenue by segment per day showing ALL DAYS
+select sum(Units_sold) as [Summed Units Sold], sum(Billings) as [Summed Billings], Segment, start_date, 
+    (sum(billings)/nullif(sum(Units_Sold),0)) as RevenuePerItem
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    group by segment,start_date
+    order by start_date, segment
+
+-- Showing units sold, billings, revenue by segment per day showing ONLY POSITIVE DAYS
+select sum(Units_sold) as [Summed Units Sold], sum(Billings) as [Summed Billings], Segment, start_date, 
+    (sum(billings)/nullif(sum(Units_Sold),0)) as RevenuePerItem
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where Units_Sold > 0 and Billings > 0
+    group by segment,start_date
+    order by start_date, segment
+-- Showing units, sold, billings, revenue by segment per day showing ONLY NEGATIVE DAYS
+select sum(Units_sold) as [Summed Units Sold], sum(Billings) as [Summed Billings], Segment, start_date, 
+    -(sum(billings)/nullif(sum(Units_Sold),0)) as RevenuePerItem
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where Units_Sold < 1 and Billings < 1
+    group by segment,start_date
+    order by start_date, segment
+
+-- want to group data by year and month (positive billings)
+select sum(Units_sold) as [Summed Units Sold], sum(Billings) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    (sum(billings)/nullif(sum(Units_Sold),0)) as RevenuePerItem
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where Units_Sold > 0 and Billings > 0 
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    order by datepart(year,start_date), datepart(month,start_date), segment
+
+---- want to group data by year and month (negative billings)
+select sum(Units_sold) as [Summed Units Sold], sum(Billings) as [Summed Billings], Segment, 
+    datepart(year,start_date) as year, datepart(month,start_date) as month,
+    (sum(billings)/nullif(sum(Units_Sold),0)) as RevenuePerItem
+    from Portfolio..[Q4_2013_Groupon_North_America_Data_XLSX (1)]
+    where Units_Sold < 1 and Billings < 1
+    group by segment,datepart(year,start_date), datepart(month,start_date)
+    order by datepart(year,start_date), datepart(month,start_date), segment
